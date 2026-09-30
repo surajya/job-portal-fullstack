@@ -1,0 +1,40 @@
+# Java
+*.class
+
+# Maven
+target/
+!mvnw
+!mvnw.cmd
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment / secrets
+.env
+application-local.properties
+application-prod.properties
+
+# Node
+node_modules/
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.swp

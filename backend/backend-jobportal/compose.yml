@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:17
+    #    container_name: jobportal
+    restart: on-failure
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb
+    volumes:
+      - D:/JAVA/UDemy/Spring7-SpringBoot4/job-portal-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: on-failure
+    ports:
+      - "6389:6379"
+
+  grafana-lgtm:
+    image: 'grafana/otel-lgtm:latest'
+    ports:
+      - '3000:3000'
+      - '4317:4317'
+      - '4318:4318'
