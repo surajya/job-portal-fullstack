@@ -1,0 +1,484 @@
+Yes. I can reconstruct the **JobPortal → AWS RDS → Elastic Beanstalk** deployment flow we worked through, including the commands.
+
+## 1. Local PostgreSQL → `jobportal.sql`
+
+Your JobPortal application was using PostgreSQL locally through Docker.
+
+First, we created a database dump:
+
+```bash
+pg_dump -U postgres -d mydb -f jobportal.sql
+```
+
+If your local DB was `jobportal_db`, the equivalent was:
+
+```bash
+pg_dump -U postgres -d jobportal_db -f jobportal.sql
+```
+
+The important output/file was:
+
+```text
+jobportal.sql
+```
+
+---
+
+# 2. AWS RDS PostgreSQL
+
+Your RDS endpoint was:
+
+```text
+jobportal-db.cf8oqceysoy9.ap-south-1.rds.amazonaws.com
+```
+
+Port:
+
+```text
+5432
+```
+
+Database where we restored the application data:
+
+```text
+mydb
+```
+
+So the JDBC URL became:
+
+```properties
+jdbc:postgresql://jobportal-db.cf8oqceysoy9.ap-south-1.rds.amazonaws.com:5432/mydb?sslmode=require
+```
+
+We also encountered the PostgreSQL `pg_hba.conf` / SSL requirement, and the connection was ultimately made using SSL.
+
+---
+
+# 3. RDS Security Group
+
+For testing, we configured the RDS Security Group inbound rule for PostgreSQL:
+
+```text
+Type: PostgreSQL
+Protocol: TCP
+Port: 5432
+```
+
+During testing you had opened access broadly, but for a real deployment it should be restricted to the required source.
+
+---
+
+# 4. Test RDS connection from local machine
+
+Using `psql`:
+
+```bash
+psql "host=jobportal-db.cf8oqceysoy9.ap-south-1.rds.amazonaws.com port=5432 dbname=mydb user=postgres sslmode=require"
+```
+
+Then enter the RDS password.
+
+You could verify databases with:
+
+```sql
+\l
+```
+
+Connect to `mydb`:
+
+```sql
+\c mydb
+```
+
+Check tables:
+
+```sql
+\dt
+```
+
+---
+
+# 5. Restore `jobportal.sql` into RDS
+
+The command we used was essentially:
+
+```bash
+psql "host=jobportal-db.cf8oqceysoy9.ap-south-1.rds.amazonaws.com port=5432 dbname=mydb user=postgres sslmode=require" < jobportal.sql
+```
+
+Then verify:
+
+```bash
+psql "host=jobportal-db.cf8oqceysoy9.ap-south-1.rds.amazonaws.com port=5432 dbname=mydb user=postgres sslmode=require"
+```
+
+Inside PostgreSQL:
+
+```sql
+\c mydb
+\dt
+```
+
+And check data:
+
+```sql
+SELECT * FROM <table_name>;
+```
+
+---
+
+# 6. Change Spring Boot application configuration
+
+Your local configuration was changed from the Docker/local PostgreSQL database to RDS.
+
+Example:
+
+```properties
+spring.datasource.url=jdbc:postgresql://jobportal-db.cf8oqceysoy9.ap-south-1.rds.amazonaws.com:5432/mydb?sslmode=require
+spring.datasource.username=postgres
+spring.datasource.password=YOUR_RDS_PASSWORD
+
+spring.jpa.hibernate.ddl-auto=update
+```
+
+Important:
+
+```text
+RDS PostgreSQL → port 5432
+Spring Boot application → port 8080
+```
+
+These are **two different ports**.
+
+---
+
+# 7. Build the Spring Boot JAR
+
+From the JobPortal project directory:
+
+```bash
+mvn clean package
+```
+
+Then check:
+
+```bash
+target/
+```
+
+Your generated JAR was something like:
+
+```text
+jobportal-0.0.1-SNAPSHOT.jar
+```
+
+You can also verify:
+
+```bash
+dir target
+```
+
+on Windows.
+
+---
+
+# 8. Run locally using the RDS database
+
+Before deploying to AWS, we could test:
+
+```bash
+java -jar target/jobportal-0.0.1-SNAPSHOT.jar
+```
+
+Application runs on:
+
+```text
+http://localhost:8080
+```
+
+For example:
+
+```text
+http://localhost:8080/swagger-ui/index.html
+```
+
+The application is running locally, but its database is now:
+
+```text
+AWS RDS PostgreSQL
+```
+
+---
+
+# 9. Elastic Beanstalk deployment
+
+We then used **AWS Elastic Beanstalk** for the Spring Boot application.
+
+The flow was:
+
+```text
+Spring Boot
+     ↓
+mvn clean package
+     ↓
+JAR
+     ↓
+Elastic Beanstalk
+     ↓
+EC2
+     ↓
+RDS PostgreSQL
+```
+
+In Elastic Beanstalk:
+
+```text
+AWS Console
+   ↓
+Elastic Beanstalk
+   ↓
+Applications
+   ↓
+Jobportal
+   ↓
+Jobportal-env
+```
+
+Then:
+
+```text
+Upload and deploy
+```
+
+Select:
+
+```text
+target/jobportal-0.0.1-SNAPSHOT.jar
+```
+
+Example deployment label:
+
+```text
+jobportal-v2
+```
+
+---
+
+# 10. Important `server.port`
+
+Your Spring Boot application was using:
+
+```properties
+server.port=8080
+```
+
+So:
+
+```text
+Spring Boot
+    ↓
+8080
+```
+
+But **Postman should NOT call the RDS endpoint on port 8080**.
+
+This was one of the issues we identified.
+
+### Wrong
+
+```text
+http://jobportal-db.cf8oqceysoy9.ap-south-1.rds.amazonaws.com:8080/...
+```
+
+### Correct concept
+
+Postman calls the **Elastic Beanstalk application**:
+
+```text
+http://<elastic-beanstalk-url>:8080/...
+```
+
+or the EB/load-balancer URL depending on your configuration.
+
+RDS is only the database:
+
+```text
+jobportal-db.cf8oqceysoy9.ap-south-1.rds.amazonaws.com:5432
+```
+
+---
+
+# 11. When we had to upload a new JAR
+
+You asked whether you could upload a new JAR after changing the application.
+
+Yes.
+
+Again:
+
+```bash
+mvn clean package
+```
+
+Then:
+
+```text
+target/jobportal-0.0.1-SNAPSHOT.jar
+```
+
+Go to:
+
+```text
+Elastic Beanstalk
+→ Jobportal
+→ Jobportal-env
+→ Upload and deploy
+```
+
+Upload the new JAR and deploy.
+
+The **RDS data remains persistent**; redeploying the JAR does not recreate the RDS database.
+
+---
+
+# 12. Elastic Beanstalk failure we encountered
+
+You had this type of error:
+
+```text
+LaunchWaitCondition failed
+```
+
+and:
+
+```text
+expected number of EC2 instances not initialized
+```
+
+Also:
+
+```text
+CREATE_FAILED
+```
+
+and:
+
+```text
+Environment health: Severe
+```
+
+and:
+
+```text
+ELB processes not healthy
+```
+
+with approximately:
+
+```text
+50% requests failing with HTTP 5xx
+```
+
+We checked the EB environment, EC2, load balancer and health configuration.
+
+You also noticed:
+
+```text
+Public IPv4: null
+Auto-assign public IPv4: No
+```
+
+---
+
+# 13. EB rebuild
+
+The rebuild path we discussed was:
+
+```text
+Elastic Beanstalk
+    ↓
+Applications
+    ↓
+Jobportal
+    ↓
+Jobportal-env
+    ↓
+Actions
+    ↓
+Rebuild environment
+```
+
+Then confirm the rebuild.
+
+After rebuilding, check:
+
+```text
+Events
+Health
+Logs
+EC2
+Load Balancer
+```
+
+---
+
+# 14. Final architecture we reached
+
+The setup we were working toward was:
+
+```text
+                         ┌─────────────────────┐
+                         │      Postman        │
+                         └──────────┬──────────┘
+                                    │
+                                    │ HTTP
+                                    ▼
+                         ┌─────────────────────┐
+                         │ Elastic Beanstalk   │
+                         │ Spring Boot JAR     │
+                         │ Port 8080           │
+                         └──────────┬──────────┘
+                                    │
+                                    │ PostgreSQL
+                                    │ Port 5432
+                                    ▼
+                    ┌─────────────────────────────┐
+                    │          AWS RDS            │
+                    │       PostgreSQL            │
+                    │                             │
+                    │ Database: mydb              │
+                    │ Port: 5432                  │
+                    └─────────────────────────────┘
+```
+
+### The two addresses to remember
+
+**RDS:**
+
+```text
+jobportal-db.cf8oqceysoy9.ap-south-1.rds.amazonaws.com:5432
+```
+
+**Spring Boot:**
+
+```text
+<Elastic-Beanstalk-URL>:8080
+```
+
+And the key commands from the whole process were:
+
+```bash
+pg_dump -U postgres -d mydb -f jobportal.sql
+```
+
+```bash
+psql "host=jobportal-db.cf8oqceysoy9.ap-south-1.rds.amazonaws.com port=5432 dbname=mydb user=postgres sslmode=require" < jobportal.sql
+```
+
+```bash
+mvn clean package
+```
+
+```bash
+java -jar target/jobportal-0.0.1-SNAPSHOT.jar
+```
