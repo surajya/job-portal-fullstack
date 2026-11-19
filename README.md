@@ -111,15 +111,25 @@ The objective is to build a centralized job discovery platform where new opportu
 
 ---
 
+
 ## 🏗️ System Architecture
 
-The backend follows a layered architecture with a clear separation of responsibilities.
+The application follows a layered architecture with clear separation of responsibilities.
 
 ### High-Level Architecture
 
+<p align="center">
+  <img
+    src="architecture.png"
+    alt="Job Portal Backend Architecture"
+    width="100%"
+  />
+</p>
 
+<p align="center">
+  <i>High-level architecture of the Job Portal Backend, illustrating JWT security, controllers, services, repositories, PostgreSQL, Redis caching, and planned job ingestion.</i>
+</p>
 
-*The architecture diagram illustrates frontend communication, JWT security, controllers, services, repositories, PostgreSQL, Redis caching, and the planned job ingestion component.*
 
 ### Request Processing Flow
 
