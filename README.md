@@ -4,9 +4,20 @@ A role-based job portal backend built using Java 21 and Spring Boot 4. The platf
 
 Designed with a layered architecture, JWT authentication, PostgreSQL, Redis caching, and modern Spring Boot technologies.
 
-\<p align="center">   \<a href="[https://jobportalfrontendrepo.onrender.com/](https://jobportalfrontendrepo.onrender.com/)">     \<img src="[https://img.shields.io/badge/Live%20Application-Visit%20Now-success?style=for-the-badge](https://img.shields.io/badge/Live%20Application-Visit%20Now-success?style=for-the-badge)" alt="Live Application"/>   \</a> \</p>
+<p align="center">
+  <a href="https://jobportalfrontendrepo.onrender.com/" target="_blank">
+    <img src="https://img.shields.io/badge/Live%20Application-Visit%20Now-success?style=for-the-badge" alt="Live Application"/>
+  </a>
+</p>
 
-\<p align="center">   \<img src="[https://img.shields.io/badge/Java-21-orange?logo=openjdk](https://img.shields.io/badge/Java-21-orange?logo=openjdk)" />   \<img src="[https://img.shields.io/badge/Spring%20Boot-4.0.5-6DB33F?logo=springboot](https://img.shields.io/badge/Spring%20Boot-4.0.5-6DB33F?logo=springboot)" />   \<img src="[https://img.shields.io/badge/PostgreSQL-Database-336791?logo=postgresql](https://img.shields.io/badge/PostgreSQL-Database-336791?logo=postgresql)" />   \<img src="[https://img.shields.io/badge/Redis-Cache-DC382D?logo=redis](https://img.shields.io/badge/Redis-Cache-DC382D?logo=redis)" />   \<img src="[https://img.shields.io/badge/Maven-Build-C71A36?logo=apachemaven](https://img.shields.io/badge/Maven-Build-C71A36?logo=apachemaven)" />   \<img src="[https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker](https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker)" /> \</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-21-orange?logo=openjdk" alt="Java 21"/>
+  <img src="https://img.shields.io/badge/Spring%20Boot-4.0.5-6DB33F?logo=springboot" alt="Spring Boot 4.0.5"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-Database-336791?logo=postgresql" alt="PostgreSQL"/>
+  <img src="https://img.shields.io/badge/Redis-Cache-DC382D?logo=redis" alt="Redis"/>
+  <img src="https://img.shields.io/badge/Maven-Build-C71A36?logo=apachemaven" alt="Maven"/>
+  <img src="https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker" alt="Docker"/>
+</p>
 
 ---
 
