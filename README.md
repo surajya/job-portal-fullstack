@@ -25,7 +25,7 @@ Designed with a layered architecture, JWT authentication, PostgreSQL, Redis cach
 
 ### Real-Time Job Ingestion from Company Career Websites
 
-\<sub>Currently exploring and designing this functionality.\</sub>
+<sub>Currently exploring and designing this functionality.</sub>
 
 One of the major upcoming enhancements is to make the job portal capable of automatically discovering and publishing job opportunities directly from company career websites.
 
